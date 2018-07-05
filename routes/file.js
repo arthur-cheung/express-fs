@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
-
 const fs = require('fs');
 
 const TEMP_FILE_DIR = './temp';
 
-/* GET users listing. */
 router.get('/', (req, res, next) => {
     console.info('Returning all files');
     const readFiles = new Promise((resolve, reject) => {
@@ -13,7 +11,8 @@ router.get('/', (req, res, next) => {
     });
     fs.readdir(TEMP_FILE_DIR, (error, fileNames) => {
         if (error) {
-            return console.error(error);
+            console.error(error);
+            res.status(500).send(error);
         }
         let fileContents = [];
         for (fileName of fileNames) {
@@ -33,12 +32,15 @@ router.get('/', (req, res, next) => {
                 console.log(fileContents);
                 res.send(fileContents)
             })
-            .catch(error => console.error('Promise all catch', error));
+            .catch(error => {
+                console.error('Promise all catch', error)
+                res.status(500).send(error);
+            });
     })
 });
 router.post('/', (req, res, next) => {
     const exampleUrl = req.protocol + '://' + req.get('host') + req.originalUrl + '/[fileName]';
-    res.send(`Please provide a file name in the URL. e.g. ${exampleUrl}`)
+    res.status(400).send(`Please provide a file name in the URL. e.g. ${exampleUrl}`)
 })
 router.post('/:fileName', (req, res, next) => {
     console.info('fileName', req.params.fileName);
@@ -46,7 +48,8 @@ router.post('/:fileName', (req, res, next) => {
 
     fs.writeFile(`${TEMP_FILE_DIR}/${req.params.fileName}`, JSON.stringify(req.body), error => {
         if (error) {
-            return console.error(error);
+            console.error(error);
+            res.status(500).send(error);
         }
         console.info('file saved');
     })
