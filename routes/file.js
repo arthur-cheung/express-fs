@@ -47,7 +47,12 @@ router.get('/:fileName', (req, res, next) => {
             console.error(error);
             res.status(500).send(error);
         }
-        res.send(JSON.parse(content));
+        try {
+            const parsedContent = JSON.parse(content);
+            res.send(parsedContent);
+        } catch (error) {
+            next(error);
+        }
     })
 });
 // DELETE ALL FILES
@@ -96,10 +101,7 @@ router.delete('/:fileName', (req, res, next) => {
         res.send(`Deleted ${req.params.fileName}`);
     })
 });
-router.post('/', (req, res, next) => {
-    const exampleUrl = req.protocol + '://' + req.get('host') + req.originalUrl + '/[fileName]';
-    res.status(400).send(`Please provide a file name in the URL. e.g. ${exampleUrl}`)
-})
+// POST DATA
 router.post('/:fileName', (req, res, next) => {
     console.info('fileName', req.params.fileName);
     console.info('fileContents', req.body);
@@ -113,5 +115,11 @@ router.post('/:fileName', (req, res, next) => {
     })
     res.send('POST file response');
 });
+// ERROR HANDLING
+router.post('/', (req, res, next) => {
+    const exampleUrl = req.protocol + '://' + req.get('host') + req.originalUrl + '/[fileName]';
+    res.status(400).send(`Please provide a file name in the URL. e.g. ${exampleUrl}`)
+})
+
 
 module.exports = router;
