@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const TEMP_FILE_DIR = './temp';
 
+// GET ALL FILES
 router.get('/', (req, res, next) => {
     console.info('Returning all files');
     const readFiles = new Promise((resolve, reject) => {
@@ -36,6 +37,63 @@ router.get('/', (req, res, next) => {
                 console.error('Promise all catch', error)
                 res.status(500).send(error);
             });
+    })
+});
+// GET SPECIFIC FILE
+router.get('/:fileName', (req, res, next) => {
+    console.info(`Returning ${req.params.fileName}`);
+    fs.readFile(`${TEMP_FILE_DIR}/${req.params.fileName}`, 'utf-8', (error, content) => {
+        if (error) {
+            console.error(error);
+            res.status(500).send(error);
+        }
+        res.send(JSON.parse(content));
+    })
+});
+// DELETE ALL FILES
+router.delete('/', (req, res, next) => {
+    console.info('Returning all files');
+    const readFiles = new Promise((resolve, reject) => {
+
+    });
+    fs.readdir(TEMP_FILE_DIR, (error, fileNames) => {
+        if (error) {
+            console.error(error);
+            res.status(500).send(error);
+        }
+        let filesDeleted = [];
+        for (fileName of fileNames) {
+            filesDeleted[filesDeleted.length] = new Promise((resolve, reject) => {
+                fs.unlink(`${TEMP_FILE_DIR}/${fileName}`, (error) => {
+                    if (error) {
+                        console.error(error);
+                        reject(error);
+                    }
+                    resolve(fileName);
+                })
+            });
+        }
+
+        Promise.all(filesDeleted)
+            .then(fileContents => {
+                console.log(fileContents);
+                res.send(`Following files deleted: ${fileContents}`)
+            })
+            .catch(error => {
+                console.error('Promise all catch', error)
+                res.status(500).send(error);
+            });
+    })
+});
+// DELETE SPECIFIC FILE
+router.delete('/:fileName', (req, res, next) => {
+    console.info(`Deleting ${req.params.fileName}`);
+    fs.unlink(`${TEMP_FILE_DIR}/${req.params.fileName}`, (error) => {
+        if (error) {
+            console.error(error);
+            res.status(500).send(error);
+        }
+        res.send(`Deleted ${req.params.fileName}`);
     })
 });
 router.post('/', (req, res, next) => {
