@@ -67,22 +67,23 @@ router.delete('/', (req, res, next) => {
             res.status(500).send(error);
         }
         let filesDeleted = [];
-        for (fileName of fileNames) {
+        fileNames.forEach(fileName => {
             filesDeleted[filesDeleted.length] = new Promise((resolve, reject) => {
                 fs.unlink(`${TEMP_FILE_DIR}/${fileName}`, (error) => {
                     if (error) {
                         console.error(error);
                         reject(error);
                     }
+                    console.log('fileName', fileName);
                     resolve(fileName);
                 })
             });
-        }
+        })
 
         Promise.all(filesDeleted)
-            .then(fileContents => {
-                console.log(fileContents);
-                res.send(`Following files deleted: ${fileContents}`)
+            .then(filesDeleted => {
+                console.log(filesDeleted);
+                res.send({ "message": "Files successfuly deleted.", "filesDeleted": filesDeleted })
             })
             .catch(error => {
                 console.error('Promise all catch', error)
@@ -98,7 +99,7 @@ router.delete('/:fileName', (req, res, next) => {
             console.error(error);
             res.status(500).send(error);
         }
-        res.send(`Deleted ${req.params.fileName}`);
+        res.send({ "message": `Files successfully deleted.`, "filesDeleted": [`${TEMP_FILE_DIR}/${req.params.fileName}`] })
     })
 });
 // POST DATA
@@ -113,7 +114,7 @@ router.post('/:fileName', (req, res, next) => {
         }
         console.info('file saved');
     })
-    res.send('POST file response');
+    res.send({ "message": `Files successfully created.`, "filesCreated": [`${TEMP_FILE_DIR}/${req.params.fileName}`] });
 });
 // ERROR HANDLING
 router.post('/', (req, res, next) => {
