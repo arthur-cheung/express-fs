@@ -8,17 +8,7 @@ block content
     include ../README.md // This doesn't work - it parses weird characters. So instead, we hard code the markdown below for now. It'd be good to link to README.md eventually.
 
   :markdown-it
-    # express-fs
-    This simple app takes JSON, and writes it to a temporary directory as a JSON file. It also retrieves all the JSON files from the temp directory, collate it into one big array for a JSON response.
-
-    ------------------------------------------------------------
-    ## INSTALL
-    1. Install first:
-        `npm i`
-    2. To start server:
-        `npm start`
-        The app will be served on port 3000
-    ------------------------------------------------------------
+    ---------------------------------------------------------------------
     ## USAGE - REST METHODS
     ### GET 
     `http://localhost:3000/file/[fileName]`
