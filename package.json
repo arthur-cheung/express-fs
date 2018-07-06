@@ -11,9 +11,9 @@
     "express": "~4.16.0",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
+    "jstransformer": "^1.0.0",
     "jstransformer-markdown-it": "^2.1.0",
     "morgan": "~1.9.0",
-    "pug": "^2.0.3",
-    "read-multiple-files": "^2.0.0"
+    "pug": "^2.0.3"
   }
 }
