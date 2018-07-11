@@ -7,9 +7,6 @@ const TEMP_FILE_DIR = './temp';
 // GET ALL FILES
 router.get('/', (req, res, next) => {
     console.info('Returning all files');
-    const readFiles = new Promise((resolve, reject) => {
-
-    });
     fs.readdir(TEMP_FILE_DIR, (error, fileNames) => {
         if (error) {
             console.error(error);
@@ -18,13 +15,26 @@ router.get('/', (req, res, next) => {
         let fileContents = [];
         for (fileName of fileNames) {
             fileContents[fileContents.length] = new Promise((resolve, reject) => {
-                fs.readFile(`${TEMP_FILE_DIR}/${fileName}`, 'utf-8', (error, content) => {
-                    if (error) {
-                        console.error(error);
-                        reject(error);
-                    }
-                    resolve(JSON.parse(content));
-                })
+                if (fs.lstatSync(`${TEMP_FILE_DIR}/${fileName}`).isDirectory()) {
+                    resolve([]);
+                } else {
+                    fs.readFile(`${TEMP_FILE_DIR}/${fileName}`, 'utf-8', (error, content) => {
+                        if (error) {
+                            console.error(error);
+                            reject(error);
+                        }
+                        try {
+                            if (!content) {
+                                resolve([]);
+                            } else {
+                                resolve(JSON.parse(content));
+                            }
+                        } catch (error) {
+                            reject(error)
+                        }
+
+                    })
+                }
             });
         }
 
@@ -58,9 +68,6 @@ router.get('/:fileName', (req, res, next) => {
 // DELETE ALL FILES
 router.delete('/', (req, res, next) => {
     console.info('Returning all files');
-    const readFiles = new Promise((resolve, reject) => {
-
-    });
     fs.readdir(TEMP_FILE_DIR, (error, fileNames) => {
         if (error) {
             console.error(error);
@@ -69,21 +76,28 @@ router.delete('/', (req, res, next) => {
         let filesDeleted = [];
         fileNames.forEach(fileName => {
             filesDeleted[filesDeleted.length] = new Promise((resolve, reject) => {
-                fs.unlink(`${TEMP_FILE_DIR}/${fileName}`, (error) => {
-                    if (error) {
-                        console.error(error);
-                        reject(error);
-                    }
-                    console.log('fileName', fileName);
-                    resolve(fileName);
-                })
+                if (fs.lstatSync(`${TEMP_FILE_DIR}/${fileName}`).isDirectory()) {
+                    resolve(`Skipped directory ${fileName}`);
+                } else {
+                    fs.unlink(`${TEMP_FILE_DIR}/${fileName}`, (error) => {
+                        if (error) {
+                            console.error(error);
+                            reject(error);
+                        }
+                        console.log('fileName', fileName);
+                        resolve(fileName);
+                    })
+                }
             });
         })
 
         Promise.all(filesDeleted)
             .then(filesDeleted => {
                 console.log(filesDeleted);
-                res.send({ "message": "Files successfuly deleted.", "filesDeleted": filesDeleted })
+                res.send({
+                    "message": "Files successfuly deleted.",
+                    "filesDeleted": filesDeleted
+                })
             })
             .catch(error => {
                 console.error('Promise all catch', error)
@@ -99,7 +113,10 @@ router.delete('/:fileName', (req, res, next) => {
             console.error(error);
             res.status(500).send(error);
         }
-        res.send({ "message": `Files successfully deleted.`, "filesDeleted": [`${TEMP_FILE_DIR}/${req.params.fileName}`] })
+        res.send({
+            "message": `Files successfully deleted.`,
+            "filesDeleted": [`${TEMP_FILE_DIR}/${req.params.fileName}`]
+        })
     })
 });
 // POST DATA
@@ -114,7 +131,10 @@ router.post('/:fileName', (req, res, next) => {
         }
         console.info('file saved');
     })
-    res.send({ "message": `Files successfully created.`, "filesCreated": [`${TEMP_FILE_DIR}/${req.params.fileName}`] });
+    res.send({
+        "message": `Files successfully created.`,
+        "filesCreated": [`${TEMP_FILE_DIR}/${req.params.fileName}`]
+    });
 });
 // ERROR HANDLING
 router.post('/', (req, res, next) => {
